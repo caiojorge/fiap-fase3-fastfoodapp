@@ -1,0 +1,71 @@
+# fase 2
+# cria as imagens que usaremos no kind
+create-images:
+	docker build -t caiojorge/fiap-rocks .
+
+# faz o login no docker hub para subir as imagens
+login:
+	docker login
+
+# sobe as imagens no docker hub
+push-images:
+	docker push caiojorge/fiap-rocks	
+
+# fase 1
+# Container
+fiap-run:
+	docker-compose up -d
+
+fiap-stop:
+	docker-compose down
+
+fiap-logs:
+	docker-compose logs -f
+
+# Local
+build:
+	go build -o bin/kitchencontrol cmd/kitchencontrol/main.go
+	
+test:
+	go test -v -cover ./...
+
+tidy:
+	go mod tidy
+
+run:
+	go run cmd/kitchencontrol/main.go
+
+install-swag:
+	go install github.com/swaggo/swag/cmd/swag@latest
+	echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
+	source ~/.bashrc
+	swag --version
+
+swaggo:
+	go get -u github.com/swaggo/swag/cmd/swag
+	go get -u github.com/swaggo/gin-swagger
+	go get -u github.com/swaggo/files
+	go get -u github.com/swaggo/gin-swagger/swaggerFiles
+	swag init -g cmd/kitchencontrol/main.go
+
+docs:
+	#rm -rf docs
+	swag init -g ./cmd/kitchencontrol/main.go -o ./docs
+
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+
+coverage: test-coverage
+	go tool cover -func=coverage.out
+
+coverage-html: test-coverage
+	go tool cover -html=coverage.out
+
+
+delete-identifiers:
+	find . -name "*.Identifier" -type f -delete
+
+mocks:
+	mockgen -source=internal/core/domain/repository/product_repository.go -destination=internal/core/domain/repository/mocks/mock_product_repository.go -package=mocksrepository
+	mockgen -source=internal/core/domain/repository/customer_repository.go -destination=internal/core/domain/repository/mocks/mock_customer_repository.go -package=mocksrepository
+	mockgen -source=internal/core/domain/repository/order_repository.go -destination=internal/core/domain/repository/mocks/mock_order_repository.go -package=mocksrepository

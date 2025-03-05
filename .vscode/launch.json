@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Launch Program",
+        "type": "go",
+        "request": "launch",
+        "program": "${workspaceFolder}/cmd/kitchencontrol/main.go",
+        "envFile": "${workspaceFolder}/.env", // Aponta para o arquivo .env
+        "args": []
+      }
+    ]
+  }
+  

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dbcontrolf2
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypass
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - my-network
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8282:8080"
+    networks:
+      - my-network
+
+  # app-payment:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile.payment
+  #   container_name: fiap-go-app-payment
+  #   ports:
+  #     - "30090:30090"
+  #   environment:
+  #     - HOST2_NAME=localhost
+  #     - HOST2_PORT=30090  
+  #   networks:
+  #     - my-network    
+  
+  app:
+    build: .
+    container_name: fiap-go-app
+    depends_on:
+      - mysql
+    ports:
+      - "30080:30080"
+    environment:
+      - HOST_NAME=localhost
+      - HOST_PORT_CONTAINER=30080  
+      - HOST_PORT_K8S=30080  
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=dbcontrol
+    networks:
+      - my-network
+            
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  my-network:
+    driver: bridge

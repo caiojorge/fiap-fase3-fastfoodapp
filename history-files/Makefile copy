@@ -1,0 +1,47 @@
+# fase 2
+# teste do projeto
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+coverage: test-coverage
+	go tool cover -func=coverage.out
+coverage-html: test-coverage
+	go tool cover -html=coverage.out
+test:
+	go test -v -cover ./...
+
+# cria o swagger
+docs:
+	#rm -rf docs
+	swag init -g ./cmd/kitchencontrol/main.go -o ./docs
+
+# limpa os arquivos de identificação
+delete-identifiers:
+	find . -name "*.Identifier" -type f -delete
+
+# cria os mocks para testes
+mocks:
+	mockgen -source=internal/core/domain/repository/product_repository.go -destination=internal/core/domain/repository/mocks/mock_product_repository.go -package=mocksrepository
+	mockgen -source=internal/core/domain/repository/customer_repository.go -destination=internal/core/domain/repository/mocks/mock_customer_repository.go -package=mocksrepository
+	mockgen -source=internal/core/domain/repository/order_repository.go -destination=internal/core/domain/repository/mocks/mock_order_repository.go -package=mocksrepository
+
+# cria as imagens que usaremos no kind
+create-images:
+	docker build -t caiojorge/fiap-rocks .
+
+# faz o login no docker hub para subir as imagens
+login:
+	docker login
+
+# sobe as imagens no docker hub
+push-images:
+	docker push caiojorge/fiap-rocks
+
+# Usei o kind para testar o projeto no k8s, sendo assim, é necessário criar o cluster
+setup-cluster:
+	kind delete cluster
+	kind create cluster --config=k8s/cluster-config.yml	
+	
+# cria o configmap e sobre o arquivo de scripts de inicialização do banco
+setup-configmap:
+	kubectl create configmap db-init-scripts --from-file=./db-init
+	kubectl get configmaps
