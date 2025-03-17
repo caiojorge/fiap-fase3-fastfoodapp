@@ -36,15 +36,12 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ./terraform
-        run: terraform plan -var="aws_region=us-east-1" \
-                           -var="ecr_repository_name=fiap-rocks"
+        run: terraform plan -var="aws_region=us-east-1" -var="ecr_repository_name=fiap-rocks"
 
       - name: Terraform Apply
         id: tf_apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve \
-            -var="aws_region=us-east-1" \
-            -var="ecr_repository_name=fiap-rocks"
+        run: terraform apply -auto-approve -var="aws_region=us-east-1" -var="ecr_repository_name=fiap-rocks"
 
       # 2) Ler a saída (URL) do ECR gerado pelo Terraform
       - name: Get ECR URL
@@ -83,8 +80,7 @@ jobs:
       - name: Deploy to EKS
         run: |
           # Substituir a imagem do Deployment pela que acabamos de fazer push
-          kubectl set image deployment/fiap-rocks-server \
-            fiap-rocks-server=$ECR_URL:latest || true
+          kubectl set image deployment/fiap-rocks-server fiap-rocks-server=$ECR_URL:latest || true
 
           # Aplica ou cria o Secret, ConfigMap, Deployment, Service, HPA:
           kubectl apply -f k8s/secret.yaml
