@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fiap-rocks-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fiap-rocks-server
+  template:
+    metadata:
+      labels:
+        app: fiap-rocks-server
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox
+          command:
+          - sh
+          - -c
+          - until nc -z -v -w30 mysql 3306; do echo "Aguardando MySQL..."; sleep 5; done
+          
+      containers:
+      - name: fiap-rocks-server
+        image: caiojorge/fiap-rocks:latest
+        env:
+        - name: HOST_NAME
+          value: localhost
+        - name: HOST_PORT_CONTAINER
+          value: "8083"
+        - name: HOST_PORT_K8S
+          value: "30080"
+        - name: APP_HOST_K8S
+          value: "fiap-rocks-server"    
+        - name: DB_HOST
+          value: mysql
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: dbcontrol
+        - name: DB_USER
+          value: myuser
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 30080 #8083

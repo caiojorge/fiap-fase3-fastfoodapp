@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fiap-rocks-config
+data:
+  HOST_NAME: "localhost"
+  HOST_PORT_CONTAINER: "8083"
+  HOST_PORT_K8S: "30080"
+  APP_HOST_K8S: "fiap-rocks-server"
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  DB_NAME: "dbcontrol"
+  DB_USER: "admin"

@@ -1,44 +1,86 @@
 name: Build and Deploy to EKS
 
 on:
-  pull_request: 
-    branches:
-      - main
-  workflow_dispatch: 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+          # Se precisar assumir a RoleLab:
+          # role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      # 1) Terraform para criar/atualizar o ECR
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-        IMAGE_TAG: latest
-      run: |
-        docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-        docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG
-        docker push ${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
 
-    - name: Update Kubeconfig
-      run: aws eks update-kubeconfig --name my-eks-cluster
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: terraform plan -var="aws_region=us-east-1" \
+                           -var="ecr_repository_name=fiap-rocks"
 
-    - name: Deploy to EKS
-      run: |
-        kubectl set image deployment/fastfoodapp fastfoodapp=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-        kubectl apply -f k8s/configmap.yaml
-        kubectl apply -f k8s/service.yaml
+      - name: Terraform Apply
+        id: tf_apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve \
+            -var="aws_region=us-east-1" \
+            -var="ecr_repository_name=fiap-rocks"
+
+      # 2) Ler a saída (URL) do ECR gerado pelo Terraform
+      - name: Get ECR URL
+        id: get_ecr_url
+        working-directory: ./terraform
+        run: |
+          echo "ECR_URL=$(terraform output -raw ecr_repository_url)" >> $GITHUB_ENV
+
+      # 3) Login no ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # 4) Build & Push da imagem usando a URL do ECR
+      - name: Docker Build and Push
+        run: |
+          IMAGE_TAG="latest"
+          echo "Usando ECR_URL=$ECR_URL"
+          
+          docker build -t $ECR_URL:$IMAGE_TAG .
+          docker push $ECR_URL:$IMAGE_TAG
+
+      # 5) Atualizar kubeconfig (para acessar EKS)
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name my-eks-cluster --region us-east-1
+
+      # 6) Deploy no EKS usando kubectl
+      - name: Deploy to EKS
+        run: |
+          # Substituir a imagem do Deployment pela que acabamos de fazer push
+          kubectl set image deployment/fiap-rocks-server \
+            fiap-rocks-server=$ECR_URL:latest || true
+
+          # Aplica ou cria o Secret, ConfigMap, Deployment, Service, HPA:
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/server-deployment.yaml
+          kubectl apply -f k8s/server-service.yaml
+          kubectl apply -f k8s/server-hpa.yaml
