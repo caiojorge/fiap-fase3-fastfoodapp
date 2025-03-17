@@ -70,6 +70,10 @@ jobs:
       # 5) Atualizar kubeconfig (para acessar EKS)
       - name: Update Kubeconfig
         run: aws eks update-kubeconfig --name my-eks-cluster --region us-east-1
+      
+      - name: Replace secrets in YAML
+        run: |
+          sed -i 's|senha=|${{ secrets.MYSQL_USER_PASSWORD }}|g' k8s/secret.yaml
 
       # 6) Deploy no EKS usando kubectl
       - name: Deploy to EKS
