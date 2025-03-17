@@ -48,9 +48,17 @@ jobs:
         id: get_ecr_url
         working-directory: ./terraform
         run: |
+          # Captura a saída (pode conter "::debug::")
           OUTPUT="$(terraform output -raw ecr_repository_url 2>&1 || true)"
+
+          # Filtra apenas o que tiver "amazonaws.com", excluindo textos extras
           ECR_URL="$(echo "$OUTPUT" | grep -o '[^"]*amazonaws.com.[^"]*' | head -n1)"
-          echo "ECR_URL=$ECR_URL" >> $GITHUB_ENV
+
+          # Garante que não tenha espaços ou quebras de linha
+          ECR_URL_CLEANED="$(echo "$ECR_URL" | tr -d '[:space:]')"
+
+          # Salva no ambiente para uso nos passos seguintes
+          echo "ECR_URL=$ECR_URL_CLEANED" >> $GITHUB_ENV
 
       # 3) Login no ECR
       - name: Login to Amazon ECR
