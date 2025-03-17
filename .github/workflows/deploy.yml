@@ -75,6 +75,10 @@ jobs:
         run: |
           sed -i 's|senha=|${{ secrets.MYSQL_USER_PASSWORD }}|g' k8s/secret.yaml
 
+      - name: Replace HOST_NAME in ConfigMap
+        run: |
+          sed -i 's|localhost|${{ secrets.HOST_NAME_SECRET }}|g' k8s/configmap.yaml
+
       # 6) Deploy no EKS usando kubectl
       - name: Deploy to EKS
         run: |
