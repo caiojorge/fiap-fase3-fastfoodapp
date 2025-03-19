@@ -5,9 +5,9 @@ provider "kubernetes" {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name = "nome-do-seu-cluster-eks"  # Substitua pelo nome do seu cluster EKS
+  name = "my-eks-cluster"  # Substitua pelo nome do seu cluster EKS
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = "nome-do-seu-cluster-eks"  # Substitua pelo nome do seu cluster EKS
+  name = "my-eks-cluster"  # Substitua pelo nome do seu cluster EKS
 }
