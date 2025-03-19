@@ -1,100 +1,86 @@
-name: Build and Deploy to EKS
+name: Deploy to EKS
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: fiap-rocks
+  CLUSTER_NAME: nome-do-seu-cluster-eks
+  IMAGE_TAG: latest
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
-          # Se precisar assumir a RoleLab:
-          # role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-
-      # 1) Terraform para criar/atualizar o ECR
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.4.6
-
-      - name: Terraform Init
-        working-directory: ./terraform
-        run: terraform init
-
-      - name: Terraform Plan
-        working-directory: ./terraform
-        run: terraform plan -var="aws_region=us-east-1" -var="ecr_repository_name=fiap-rocks"
-
-      - name: Terraform Apply
-        id: tf_apply
-        working-directory: ./terraform
-        run: terraform apply -auto-approve -var="aws_region=us-east-1" -var="ecr_repository_name=fiap-rocks"
-
-      # 2) Ler a saída (URL) do ECR gerado pelo Terraform
-      - name: Get ECR URL
-        id: get_ecr_url
-        working-directory: ./terraform
-        run: |
-          # Captura a saída (pode conter "::debug::")
-          OUTPUT="$(terraform output -raw ecr_repository_url 2>&1 || true)"
-
-          # Filtra apenas o que tiver "amazonaws.com", excluindo textos extras
-          ECR_URL="$(echo "$OUTPUT" | grep -o '[^"]*amazonaws.com.[^"]*' | head -n1)"
-
-          # Garante que não tenha espaços ou quebras de linha
-          ECR_URL_CLEANED="$(echo "$ECR_URL" | tr -d '[:space:]')"
-
-          # Salva no ambiente para uso nos passos seguintes
-          echo "ECR_URL=$ECR_URL_CLEANED" >> $GITHUB_ENV
-
-      # 3) Login no ECR
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      # 4) Build & Push da imagem usando a URL do ECR
-      - name: Docker Build and Push
-        run: |
-          IMAGE_TAG="latest"
-          echo "Usando ECR_URL=$ECR_URL"
-          
-          docker build -t $ECR_URL:$IMAGE_TAG .
-          docker push $ECR_URL:$IMAGE_TAG
-
-      # 5) Atualizar kubeconfig (para acessar EKS)
-      - name: Update Kubeconfig
-        run: aws eks update-kubeconfig --name my-eks-cluster --region us-east-1
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
       
-      - name: Replace secrets in YAML
-        run: |
-          sed -i 's|senha=|${{ secrets.MYSQL_USER_PASSWORD }}|g' k8s/secret.yaml
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Apply
+      run: terraform apply -auto-approve  
 
-      - name: Replace HOST_NAME in ConfigMap
-        run: |
-          sed -i 's|localhost|${{ secrets.HOST_NAME_SECRET }}|g' k8s/configmap.yaml
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      # 6) Deploy no EKS usando kubectl
-      - name: Deploy to EKS
-        run: |
-          # Substituir a imagem do Deployment pela que acabamos de fazer push
-          kubectl set image deployment/fiap-rocks-server fiap-rocks-server=$ECR_URL:latest || true
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          # Aplica ou cria o Secret, ConfigMap, Deployment, Service, HPA:
-          kubectl apply -f k8s/secret.yaml
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/server-deployment.yaml
-          kubectl apply -f k8s/server-service.yaml
-          kubectl apply -f k8s/server-hpa.yaml
+    - name: Replace ECR image URL in deployment file
+      run: |
+        ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG"
+        sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
+
+    - name: Configure kubectl
+      run: |
+        aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+
+    - name: Deploy to EKS
+      run: |
+        # Aplica os recursos na ordem correta
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secret.yaml
+        kubectl apply -f k8s/server-service.yaml
+        kubectl apply -f k8s/server-deployment.yaml
+        kubectl apply -f k8s/server-hpa.yaml
+
+    - name: Update ConfigMap with LoadBalancer URL
+      run: |
+        # Aguarda o LoadBalancer ficar disponível
+        echo "Aguardando o LoadBalancer ficar disponível..."
+        LB_HOST=$(kubectl get service fiap-rocks-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        while [ -z "$LB_HOST" ]; do
+          sleep 10
+          LB_HOST=$(kubectl get service fiap-rocks-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        done
+
+        # Atualiza o ConfigMap com a URL do LoadBalancer
+        echo "LoadBalancer URL: $LB_HOST"
+        kubectl get configmap fiap-rocks-config -o yaml > configmap.yaml
+        sed -i "s/HOST_NAME: \"\"/HOST_NAME: \"http:\/\/$LB_HOST\"/" configmap.yaml
+        kubectl apply -f configmap.yaml
+
+        # Reinicia o deployment para aplicar as mudanças
+        kubectl rollout restart deployment fiap-rocks-server

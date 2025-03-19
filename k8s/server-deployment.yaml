@@ -12,41 +12,54 @@ spec:
       labels:
         app: fiap-rocks-server
     spec:
-      initContainers:
-        - name: wait-for-mysql
-          image: busybox
-          command:
-            - sh
-            - -c
-            - >
-              until nc -z -v -w30 mysql 3306;
-              do echo "Aguardando MySQL...";
-              sleep 5;
-              done
-
       containers:
       - name: fiap-rocks-server
-        # Ajuste para o ECR final: <account_id>.dkr.ecr.us-east-1.amazonaws.com/fiap-rocks:latest
-        image: "caiojorge/fiap-rocks:latest"
-
-        envFrom:
-          - configMapRef:
-              name: fiap-rocks-config
-
+        image: $ECR_IMAGE_URL  # Será substituído dinamicamente
         env:
-          - name: DB_PASS
-            valueFrom:
-              secretKeyRef:
-                name: mysql-secret
-                key: user-password
-
+        - name: HOST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: HOST_NAME
+        - name: APP_HOST_K8S
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: APP_HOST_K8S
+        - name: HOST_PORT_CONTAINER
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: HOST_PORT_CONTAINER
+        - name: HOST_PORT_K8S
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: HOST_PORT_K8S
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: fiap-rocks-config
+              key: DB_USER
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
         ports:
-          - containerPort: 8083
-
-        resources:
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
+        - containerPort: 8083

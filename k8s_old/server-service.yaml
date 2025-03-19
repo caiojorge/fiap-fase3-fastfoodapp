@@ -1,0 +1,26 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: fiap-rocks-server
+# spec:
+#   selector:
+#     app: fiap-rocks-server
+#   type: NodePort
+#   ports:
+#     - protocol: TCP
+#       port: 8083
+#       targetPort: 8083
+#       nodePort: 30080
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fiap-rocks-server
+spec:
+  selector:
+    app: fiap-rocks-server
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
