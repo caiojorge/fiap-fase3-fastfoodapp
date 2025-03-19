@@ -1,9 +1,10 @@
 name: Deploy to EKS
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
