@@ -8,7 +8,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: fiap-rocks
-  CLUSTER_NAME: nome-do-seu-cluster-eks
+  CLUSTER_NAME: my-eks-cluster
   IMAGE_TAG: latest
 
 jobs:
