@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fiap-rocks-server
-        image: 552877634954.dkr.ecr.us-east-1.amazonaws.com/fiap-rocks # $ECR_IMAGE_URL  # Será substituído dinamicamente
+        image: $ECR_IMAGE_URL  # Será substituído dinamicamente
         env:
         - name: HOST_NAME
           valueFrom:
