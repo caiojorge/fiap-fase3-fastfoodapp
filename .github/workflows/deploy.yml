@@ -53,10 +53,10 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Replace ECR image URL in deployment file
-      run: |
-        ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG"
-        sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
+    # - name: Replace ECR image URL in deployment file
+    #   run: |
+    #     ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG"
+    #     sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
 
     - name: Configure kubectl
       run: |
