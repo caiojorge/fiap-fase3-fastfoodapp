@@ -13,53 +13,53 @@ spec:
         app: fiap-rocks-server
     spec:
       containers:
-      - name: fiap-rocks-server
-        image: $ECR_IMAGE_URL  # Será substituído dinamicamente
-        env:
-        - name: HOST_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: HOST_NAME
-        - name: APP_HOST_K8S
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: APP_HOST_K8S
-        - name: HOST_PORT_CONTAINER
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: HOST_PORT_CONTAINER
-        - name: HOST_PORT_K8S
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: HOST_PORT_K8S
-        - name: DB_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: DB_HOST
-        - name: DB_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: DB_PORT
-        - name: DB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: DB_NAME
-        - name: DB_USER
-          valueFrom:
-            configMapKeyRef:
-              name: fiap-rocks-config
-              key: DB_USER
-        - name: DB_PASS
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: user-password
-        ports:
-        - containerPort: 8083
+        - name: fiap-rocks-server
+          image: $ECR_IMAGE_URL # Será substituído dinamicamente
+          env:
+            - name: HOST_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: HOST_NAME
+            - name: APP_HOST_K8S
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: APP_HOST_K8S
+            - name: HOST_PORT_CONTAINER
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: HOST_PORT_CONTAINER
+            - name: HOST_PORT_K8S
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: HOST_PORT_K8S
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: fiap-rocks-config
+                  key: DB_USER
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: user-password
+          ports:
+            - containerPort: 8083
