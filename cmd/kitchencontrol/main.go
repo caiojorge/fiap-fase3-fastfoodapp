@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/caiojorge/fiap-challenge-ddd/docs"
 	connection "github.com/caiojorge/fiap-challenge-ddd/internal/infraestructure/driven/db/connection"
@@ -100,11 +101,16 @@ func main() {
 }
 
 func setupSwagger(hostname string, hostport string, server *server.GinServer, logger *zap.Logger) {
+
+	_hostname := hostname
+	_hostname = strings.TrimPrefix(_hostname, "http://")
+	_hostname = strings.TrimPrefix(_hostname, "https://")
+
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", hostname, hostport)
 	docs.SwaggerInfo.BasePath = "/kitchencontrol/api/v1"
 
 	//swaggerURL := fmt.Sprintf("http://%s:%s/kitchencontrol/api/v1/docs/doc.json", hostname, hostport)
-	swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", hostname, hostport)
+	swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", _hostname, hostport)
 
 	fmt.Println("swaggerURL: ", swaggerURL)
 
