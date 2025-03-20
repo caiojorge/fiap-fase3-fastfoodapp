@@ -56,7 +56,7 @@ jobs:
     - name: Replace ECR image URL in deployment file
       run: |
           ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/fiap-rocks:latest"
-          sed -i "s|<ECR_REGISTRY>/fiap-rocks:latest|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
+          sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
 
     - name: Configure kubectl
       run: |
