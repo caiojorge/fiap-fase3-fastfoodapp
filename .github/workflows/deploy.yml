@@ -10,7 +10,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: fiap-rocks
   CLUSTER_NAME: my-eks-cluster
-  IMAGE_TAG: latest
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build-and-deploy:
@@ -55,8 +55,8 @@ jobs:
 
     - name: Replace ECR image URL in deployment file
       run: |
-          ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/fiap-rocks:latest"
-          sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
+        ECR_IMAGE_URL="${{ steps.login-ecr.outputs.registry }}/fiap-rocks:${{ github.sha }}"
+        sed -i "s|\$ECR_IMAGE_URL|$ECR_IMAGE_URL|g" k8s/server-deployment.yaml
 
     - name: Configure kubectl
       run: |
