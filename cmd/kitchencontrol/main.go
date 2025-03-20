@@ -69,6 +69,10 @@ func main() {
 
 	logger.Info("Migration executed successfully")
 
+	fmt.Println("hostname: ", hostname)
+	fmt.Println("hostport: ", hostport)
+	fmt.Println("hostportContainer: ", hostportContainer)
+
 	setupSwagger(hostname, hostport, server, logger)
 
 	// Iniciar o "cron"
@@ -101,6 +105,9 @@ func setupSwagger(hostname string, hostport string, server *server.GinServer, lo
 
 	//swaggerURL := fmt.Sprintf("http://%s:%s/kitchencontrol/api/v1/docs/doc.json", hostname, hostport)
 	swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", hostname, hostport)
+
+	fmt.Println("swaggerURL: ", swaggerURL)
+
 	server.GetRouter().GET("/kitchencontrol/api/v1/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	logger.Info("Server running on " + hostname + ":" + hostport)

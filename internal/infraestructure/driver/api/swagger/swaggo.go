@@ -27,7 +27,8 @@ func (s *Swaggo) Execute() string {
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", s.hostname, s.hostport)
 	docs.SwaggerInfo.BasePath = "/kitchencontrol/api/v1"
 
-	swaggerURL := fmt.Sprintf("http://%s:%s/kitchencontrol/api/v1/docs/doc.json", s.hostname, s.hostport)
+	//swaggerURL := fmt.Sprintf("http://%s:%s/kitchencontrol/api/v1/docs/doc.json", s.hostname, s.hostport)
+	swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", s.hostname, s.hostport)
 	s.server.GetRouter().GET("/kitchencontrol/api/v1/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	return swaggerURL
 }
