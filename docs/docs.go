@@ -36,7 +36,7 @@ const docTemplate = `{
                 "tags": [
                     "Checkouts"
                 ],
-                "summary": "Create Checkout",
+                "summary": "Cria o checkout da ordem (inicia o processo de pagamento e comunicação com o gateway)",
                 "parameters": [
                     {
                         "description": "cria novo Checkout",
@@ -894,7 +894,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a new product in the database",
+                "description": "Cria um novo produto; As categorias são fixas: Lanches, Bebidas, Acompanhamentos e Sobremesas",
                 "consumes": [
                     "application/json"
                 ],
@@ -904,10 +904,10 @@ const docTemplate = `{
                 "tags": [
                     "Products"
                 ],
-                "summary": "Create a new product",
+                "summary": "Cria um novo produto",
                 "parameters": [
                     {
-                        "description": "New Product Data",
+                        "description": "Novo produto",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -918,7 +918,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully created",
+                        "description": "Criado com sucesso",
                         "schema": {
                             "$ref": "#/definitions/usecase.RegisterProductOutputDTO"
                         }
@@ -946,7 +946,7 @@ const docTemplate = `{
         },
         "/products/category/{id}": {
             "get": {
-                "description": "Get details of a Product by category",
+                "description": "Busca produtos por categoria, ajusta a categoria para o plural e a primeira letra maiúscula",
                 "consumes": [
                     "application/json"
                 ],
@@ -956,12 +956,12 @@ const docTemplate = `{
                 "tags": [
                     "Products"
                 ],
-                "summary": "Get a Product by category",
+                "summary": "Busca produtos por categoria",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Product category",
-                        "name": "id",
+                        "description": "Busca pelo nome da categoria; São aceitos apenas: Lanches, Bebidas, Sobremesas e Acompanhamentos",
+                        "name": "category",
                         "in": "path",
                         "required": true
                     }
@@ -983,7 +983,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Product not found",
+                        "description": "Problems processing the request",
                         "schema": {
                             "type": "string"
                         }

@@ -29,7 +29,7 @@
                 "tags": [
                     "Checkouts"
                 ],
-                "summary": "Cria o checkout da ordem (inicia o processo de pagamento e comunicação com o gateway)",
+                "summary": "Create Checkout",
                 "parameters": [
                     {
                         "description": "cria novo Checkout",
@@ -887,7 +887,7 @@
                 }
             },
             "post": {
-                "description": "Cria um novo produto; As categorias são fixas: Lanches, Bebidas, Acompanhamentos e Sobremesas",
+                "description": "Creates a new product in the database",
                 "consumes": [
                     "application/json"
                 ],
@@ -897,10 +897,10 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Cria um novo produto",
+                "summary": "Create a new product",
                 "parameters": [
                     {
-                        "description": "Novo produto",
+                        "description": "New Product Data",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -911,7 +911,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Criado com sucesso",
+                        "description": "Successfully created",
                         "schema": {
                             "$ref": "#/definitions/usecase.RegisterProductOutputDTO"
                         }
@@ -939,7 +939,7 @@
         },
         "/products/category/{id}": {
             "get": {
-                "description": "Busca produtos por categoria, ajusta a categoria para o plural e a primeira letra maiúscula",
+                "description": "Get details of a Product by category",
                 "consumes": [
                     "application/json"
                 ],
@@ -949,12 +949,12 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Busca produtos por categoria",
+                "summary": "Get a Product by category",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Busca pelo nome da categoria; São aceitos apenas: Lanches, Bebidas, Sobremesas e Acompanhamentos",
-                        "name": "category",
+                        "description": "Product category",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -976,7 +976,7 @@
                         }
                     },
                     "500": {
-                        "description": "Problems processing the request",
+                        "description": "Product not found",
                         "schema": {
                             "type": "string"
                         }

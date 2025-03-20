@@ -496,8 +496,7 @@ paths:
           description: internal server error
           schema:
             type: string
-      summary: Cria o checkout da ordem (inicia o processo de pagamento e comunicação
-        com o gateway)
+      summary: Create Checkout
       tags:
       - Checkouts
   /checkouts/{id}/check/payment:
@@ -1066,10 +1065,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: 'Cria um novo produto; As categorias são fixas: Lanches, Bebidas,
-        Acompanhamentos e Sobremesas'
+      description: Creates a new product in the database
       parameters:
-      - description: Novo produto
+      - description: New Product Data
         in: body
         name: request
         required: true
@@ -1079,7 +1077,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Criado com sucesso
+          description: Successfully created
           schema:
             $ref: '#/definitions/usecase.RegisterProductOutputDTO'
         "400":
@@ -1094,7 +1092,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/shared.ErrorResponse'
-      summary: Cria um novo produto
+      summary: Create a new product
       tags:
       - Products
   /products/{id}:
@@ -1184,13 +1182,11 @@ paths:
     get:
       consumes:
       - application/json
-      description: Busca produtos por categoria, ajusta a categoria para o plural
-        e a primeira letra maiúscula
+      description: Get details of a Product by category
       parameters:
-      - description: 'Busca pelo nome da categoria; São aceitos apenas: Lanches, Bebidas,
-          Sobremesas e Acompanhamentos'
+      - description: Product category
         in: path
-        name: category
+        name: id
         required: true
         type: string
       produces:
@@ -1207,10 +1203,10 @@ paths:
           schema:
             type: string
         "500":
-          description: Problems processing the request
+          description: Product not found
           schema:
             type: string
-      summary: Busca produtos por categoria
+      summary: Get a Product by category
       tags:
       - Products
 swagger: "2.0"
