@@ -70,6 +70,8 @@ func (d *DB) setupMysql() *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		dbUser, dbPass, dbHost, dbPort, dbName)
 
+	fmt.Println("Connecting to the database...", dsn)
+
 	var db *gorm.DB
 	var err error
 
