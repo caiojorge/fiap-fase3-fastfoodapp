@@ -26,6 +26,17 @@ data:
 
 - Substituir o valor de DB_HOST pelo endpoint do RDS que foi criado na execução da action do projeto fiap-fase3-infra-rds
 
+### Atualizar a senha usando base64
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  user-password: ""  # Substitua pela senha codificada em base64
+```
+
 ## Secrets github action    
 - substituir as secrets no github pelos valores indicados pela AWS
 
