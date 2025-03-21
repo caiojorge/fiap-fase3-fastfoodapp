@@ -110,7 +110,8 @@ func setupSwagger(hostname string, hostport string, server *server.GinServer, lo
 	docs.SwaggerInfo.BasePath = "/kitchencontrol/api/v1"
 
 	//swaggerURL := fmt.Sprintf("http://%s:%s/kitchencontrol/api/v1/docs/doc.json", hostname, hostport)
-	swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", _hostname, hostport)
+	//swaggerURL := fmt.Sprintf("%s:%s/kitchencontrol/api/v1/docs/doc.json", _hostname, hostport)
+	swaggerURL := fmt.Sprintf("%s/kitchencontrol/api/v1/docs/doc.json", _hostname)
 
 	fmt.Println("swaggerURL: ", swaggerURL)
 
