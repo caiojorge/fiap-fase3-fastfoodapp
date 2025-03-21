@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: fiap-rocks-config
 data:
-  DB_HOST: "terraform-20250321190301938100000002.cdefd7onvkey.us-east-1.rds.amazonaws.com"  # Substitua pelo endpoint do seu RDS
+  DB_HOST: "terraform-20250321223405451400000002.cdefd7onvkey.us-east-1.rds.amazonaws.com"  # Substitua pelo endpoint do seu RDS
   DB_PORT: "3306"
   DB_NAME: "dbcontrol"
   DB_USER: "admin" # substituir
