@@ -1,3 +1,48 @@
+#
+# Kitchen Control | fase 3
+## Executar action do projeto fiap-fase3-infra-rds
+- https://github.com/caiojorge/fiap-fase3-infra-rds/actions
+## Executar action do projeto fiap-fase-infra-eks
+- https://github.com/caiojorge/fiap-fase3-infra-eks/actions
+## Como fazer o deploy no AWS
+### Ajustar DB_HOST no k8s/configmap.yaml
+- https://us-east-1.console.aws.amazon.com/rds/home?region=us-east-1#databases:
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fiap-rocks-config
+data:
+  DB_HOST: "terraform-20250321190301938100000002.cdefd7onvkey.us-east-1.rds.amazonaws.com"  # Substitua pelo endpoint do seu RDS
+  DB_PORT: "3306"
+  DB_NAME: "dbcontrol"
+  DB_USER: "admin" # substituir
+  APP_HOST_K8S: "fiap-rocks-server"
+  HOST_PORT_CONTAINER: "8083"
+  HOST_PORT_K8S: "30080"
+  HOST_NAME: ""  # Será preenchido dinamicamente após o deploy
+```
+
+- Substituir o valor de DB_HOST pelo endpoint do RDS que foi criado na execução da action do projeto fiap-fase3-infra-rds
+
+## Secrets github action    
+- substituir as secrets no github pelos valores indicados pela AWS
+
+```
+AWS_ACCESS_KEY_ID = id no aws
+AWS_SECRET_ACCESS_KEY = key no aws
+AWS_SESSION_TOKEN = token no aws
+```        
+- fazer isso para todos os projetos
+
+## Executar a action
+- Temos 2 formas de iniciar a action
+  - via pull_request
+  - via workflow_dispatch
+
+# 
+
 # Kitchen Control | fase 2
 
 ## Índice

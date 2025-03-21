@@ -21,9 +21,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// @title Fiap Fase 2 Challenge Clean Arch API - 9SOAT
+// @title Fiap Fase 3 Challenge AWS - 9SOAT
 // @version 1.0
-// @description This is fiap fase 2 challenge project.
+// @description This is fiap fase 3 challenge project.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
