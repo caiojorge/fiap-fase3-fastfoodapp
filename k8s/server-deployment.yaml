@@ -62,4 +62,4 @@ spec:
                   name: mysql-secret
                   key: user-password
           ports:
-            - containerPort: 8083
+            - containerPort: 30080 #8083
