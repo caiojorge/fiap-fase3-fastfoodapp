@@ -7,7 +7,9 @@ spec:
     app: fiap-rocks-server
   type: LoadBalancer
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8083
-    nodePort: 30080    # Porta exposta no Node (opcional, para tipo NodePort)
+    - name: http
+      port: 80
+      targetPort: 8083
+    - name: custom-port
+      port: 30080
+      targetPort: 8083
